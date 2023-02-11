@@ -36,6 +36,10 @@ struct Audit: AsyncParsableCommand {
 
 	private func processBuild(at path: Path) async throws {
 		let package = try Unarchive().unarchiveBuildIfNecessary(at: path)
-		print("Package path: \(package.absolute().string)")
+		print("📝  Performing audit tasks...")
+		for task in auditTasks {
+			try await task.performAudit(package: package)
+		}
+		print("✅  Audit complete!")
 	}
 }
