@@ -13,9 +13,12 @@ struct Audit: AsyncParsableCommand {
 	@Option(name: [.short, .long], help: "The file path of a local .app or .ipa file")
 	var path: String?
 
-	private var tmpDir: Path? {
-		guard let tmpDirString = ProcessInfo.processInfo.environment["TMPDIR"] else { return nil }
-		return Path(tmpDirString)
+	/// The complete list of audit steps to perform
+	private var auditTasks: [any AuditTask] {
+		return [
+			StaticFrameworksTask(),
+			GetTaskAllowTask()
+		]
 	}
 
 	func run() async throws {
@@ -32,8 +35,7 @@ struct Audit: AsyncParsableCommand {
 	// MARK: - Private helpers
 
 	private func processBuild(at path: Path) async throws {
-		guard path.exists else {
-			throw AuditError.fileDoesNotExist(path: path.string)
-		}
+		let package = try Unarchive().unarchiveBuildIfNecessary(at: path)
+		print("Package path: \(package.absolute().string)")
 	}
 }

@@ -4,7 +4,7 @@ import ShellOut
 struct Unarchive {
 	/// If the build at the provided path is an archive, unarchive it and move it to a temporary location.
 	/// Otherwise, just return the provided path.
-	func unarchiveBuildIfNecessary(at path: Path) async throws -> Path {
+	func unarchiveBuildIfNecessary(at path: Path) throws -> Path {
 		guard path.exists else {
 			throw AuditError.fileDoesNotExist(path: path.string)
 		}
@@ -22,6 +22,7 @@ struct Unarchive {
 			try destination.delete()
 		}
 
+		print("📦  Unarchiving IPA at path: \(path.string)")
 		try shellOut(to: "unzip", arguments: [path.string, "-d", destination.string])
 		guard let package = Path.glob("\(destination.string)/Payload/*.app").first else {
 			throw AuditError.cantFindUnzippedPackage
