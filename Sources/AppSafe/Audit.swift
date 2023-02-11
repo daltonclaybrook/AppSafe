@@ -37,9 +37,22 @@ struct Audit: AsyncParsableCommand {
 	private func processBuild(at path: Path) async throws {
 		let package = try Unarchive().unarchiveBuildIfNecessary(at: path)
 		print("📝  Performing audit tasks...")
+
+		var didError = false
 		for task in auditTasks {
-			try await task.performAudit(package: package)
+			do {
+				try await task.performAudit(package: package)
+			} catch let error {
+				didError = true
+				let descriptionError = error as any CustomStringConvertible
+				print("❌  \(descriptionError.description)")
+			}
 		}
-		print("✅  Audit complete!")
+
+		if didError {
+			throw AuditError.oneOrMoreTasksFailed
+		} else {
+			print("✅  Audit complete!")
+		}
 	}
 }

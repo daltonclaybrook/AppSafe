@@ -6,6 +6,7 @@ enum AuditError: Error {
 	case invalidHTTPResponseStatus(code: Int?)
 	case invalidIPAOrAppPackage
 	case cantFindUnzippedPackage
+	case oneOrMoreTasksFailed
 }
 
 extension AuditError: CustomStringConvertible {
@@ -26,6 +27,8 @@ extension AuditError: CustomStringConvertible {
 			return "The provided file must either be an .app package or an .ipa"
 		case .cantFindUnzippedPackage:
 			return "Failed to locate package after unzipping the IPA"
+		case .oneOrMoreTasksFailed:
+			return "Audit failed. One or more tasks resulted in an error."
 		}
 	}
 }
