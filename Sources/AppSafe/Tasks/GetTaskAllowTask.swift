@@ -15,28 +15,31 @@ struct GetTaskAllowTask: AuditTask {
 			try entitlements.delete()
 		}
 
+		// Invoke `codesign` to export the entitlements to `entitlements.txt`
 		try shellOut(to: "codesign", arguments: ["-dv", "--entitlements", entitlements.absolute().string, package.absolute().string])
 		guard entitlements.exists else {
 			throw GetTaskAllowTaskError.entitlementsFileNotCreated
 		}
 
+		// Parse the string using the Regex to find the `get-task-allow` entitlement
 		let contents: String = try entitlements.read()
 		guard let match = Self.regex.firstMatch(in: contents, range: NSRange(location: 0, length: contents.bridge().length)) else {
 			throw GetTaskAllowTaskError.cantFindGetTaskAllowEntitlement
 		}
 
-		// The range of the first capture group, which should be "true" or "false"
+		// Find the range of the entitlement value
 		let valueRange = match.range(at: 1)
 		guard valueRange.location != NSNotFound else {
 			throw GetTaskAllowTaskError.invalidEntitlement
 		}
 
+		// Get the Bool value of the entitlement
 		let valueString = contents.bridge().substring(with: valueRange)
 		guard let entitlementValue = Bool(valueString) else {
 			throw GetTaskAllowTaskError.invalidEntitlement
 		}
 
-		// This is the real test. This value must be false.
+		// Finally, check the bool value. It must be "false"
 		if entitlementValue == true {
 			throw GetTaskAllowTaskError.getTaskAllowIsTrue
 		}
