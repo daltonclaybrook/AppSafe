@@ -4,6 +4,8 @@ import ShellOut
 
 /// This audit task ensures that the entitlements contain `get-task-allow: false`
 struct GetTaskAllowTask: AuditTask {
+	let taskName = "Verify get-task-allow is false"
+
 	private static let regex = try! NSRegularExpression(
 		pattern: #"\[Key\] get-task-allow\n\h*\[Value\]\n\h+\[Bool\] (true|false)\n"#
 	)

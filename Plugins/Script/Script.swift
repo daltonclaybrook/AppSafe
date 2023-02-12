@@ -11,7 +11,7 @@ struct Script: CommandPlugin {
 
 		let target = executableTargets[0]
 		let packageDirectory = context.package.directory.string
-		let contents = generateInstallScriptContents(targetName: target.name, packagePath: packageDirectory)
+		let contents = generateScriptContents(targetName: target.name, packagePath: packageDirectory)
 
 		let destinationPath = "\(packageDirectory)/script.sh"
 		if FileManager.default.fileExists(atPath: destinationPath) {
@@ -34,7 +34,7 @@ struct Script: CommandPlugin {
 	}
 }
 
-private func generateInstallScriptContents(targetName: String, packagePath: String) -> String {
+private func generateScriptContents(targetName: String, packagePath: String) -> String {
 """
 #!/bin/bash
 

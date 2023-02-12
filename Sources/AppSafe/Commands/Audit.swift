@@ -11,7 +11,7 @@ struct Audit: AsyncParsableCommand {
 	var url: String?
 
 	@Option(name: [.short, .long], help: "The file path of a local .app or .ipa file", completion: .file(extensions: ["ipa"]))
-	var path: String?
+	var path: Path?
 
 	/// The complete list of audit steps to perform
 	private var auditTasks: [any AuditTask] {
@@ -26,7 +26,7 @@ struct Audit: AsyncParsableCommand {
 			let temporaryPath = try await Downloader().downloadToTemporaryFile(from: url)
 			try await processBuild(at: temporaryPath)
 		} else if let path, url == nil {
-			try await processBuild(at: Path(path))
+			try await processBuild(at: path)
 		} else {
 			throw AuditError.urlOrPath
 		}
@@ -34,25 +34,52 @@ struct Audit: AsyncParsableCommand {
 
 	// MARK: - Private helpers
 
+	private struct TaskResult: Equatable {
+		enum Outcome: Equatable {
+			case success
+			case error(String)
+		}
+
+		let name: String
+		let outcome: Outcome
+	}
+
 	private func processBuild(at path: Path) async throws {
 		let package = try Unarchive().unarchiveBuildIfNecessary(at: path)
 		print("📝  Performing audit tasks...")
 
-		var didError = false
-		for task in auditTasks {
-			do {
-				try await task.performAudit(package: package)
-			} catch let error {
-				didError = true
-				let descriptionError = error as any CustomStringConvertible
-				print("❌  \(descriptionError.description)")
+		let results = await withTaskGroup(of: TaskResult.self) { group in
+			for task in auditTasks {
+				group.addTask {
+					let name = task.taskName
+					do {
+						try await task.performAudit(package: package)
+						print("\(name): ✅")
+						return TaskResult(name: name, outcome: .success)
+					} catch let error {
+						print("\(name): ❌")
+						return TaskResult(name: name, outcome: .error((error as CustomStringConvertible).description))
+					}
+				}
+			}
+			return await group.reduce(into: []) { $0.append($1) }
+		}
+
+		let errorStrings: [String] = results.compactMap { result in
+			switch result.outcome {
+			case .success:
+				return nil
+			case .error(let description):
+				return description
 			}
 		}
 
-		if didError {
-			throw AuditError.oneOrMoreTasksFailed
-		} else {
+		if errorStrings.isEmpty {
 			print("✅  Audit complete!")
+		} else {
+			let allErrors = errorStrings.map { "  - \($0)" }.joined(separator: "\n")
+			print("Errors:\n\(allErrors)")
+			Darwin.exit(1)
 		}
 	}
 }

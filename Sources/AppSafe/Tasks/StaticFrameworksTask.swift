@@ -3,6 +3,8 @@ import ShellOut
 
 /// This audit task ensures there are not static frameworks bundled in the application
 struct StaticFrameworksTask: AuditTask {
+	let taskName = "Verify no static frameworks are embedded"
+
 	func performAudit(package: Path) async throws {
 		let frameworks = Path.glob("\(package.string)/Frameworks/*.framework")
 		for framework in frameworks {
