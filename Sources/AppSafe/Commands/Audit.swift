@@ -10,7 +10,7 @@ struct Audit: AsyncParsableCommand {
 	@Option(name: [.short, .long], help: "The URL of an IPA file to download")
 	var url: String?
 
-	@Option(name: [.short, .long], help: "The file path of a local .app or .ipa file")
+	@Option(name: [.short, .long], help: "The file path of a local .app or .ipa file", completion: .file(extensions: ["ipa"]))
 	var path: String?
 
 	/// The complete list of audit steps to perform

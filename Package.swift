@@ -21,5 +21,14 @@ let package = Package(
 			"ShellOut"
 		]),
         .testTarget(name: "AppSafeTests", dependencies: ["AppSafe"]),
+		.plugin(
+			name: "Script",
+			capability: .command(
+				intent: .custom(verb: "script", description: "Generate a script to build and run the app"),
+				permissions: [
+					.writeToPackageDirectory(reason: "Used to write the script to disk")
+				]
+			)
+		)
     ]
 )
