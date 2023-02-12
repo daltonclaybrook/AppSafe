@@ -24,9 +24,9 @@ struct Audit: AsyncParsableCommand {
 	func run() async throws {
 		if let url, path == nil {
 			let temporaryPath = try await Downloader().downloadToTemporaryFile(from: url)
-			try await processBuild(at: temporaryPath)
+			try await runAuditTasksOnBuild(at: temporaryPath)
 		} else if let path, url == nil {
-			try await processBuild(at: path)
+			try await runAuditTasksOnBuild(at: path)
 		} else {
 			throw AuditError.urlOrPath
 		}
@@ -44,7 +44,7 @@ struct Audit: AsyncParsableCommand {
 		let outcome: Outcome
 	}
 
-	private func processBuild(at path: Path) async throws {
+	private func runAuditTasksOnBuild(at path: Path) async throws {
 		let package = try Unarchive().unarchiveBuildIfNecessary(at: path)
 		print("📝  Performing audit tasks...")
 
