@@ -17,7 +17,8 @@ struct Audit: AsyncParsableCommand {
 	private var auditTasks: [any AuditTask] {
 		return [
 			StaticFrameworksTask(),
-			GetTaskAllowTask()
+			GetTaskAllowTask(),
+			StripTask()
 		]
 	}
 
