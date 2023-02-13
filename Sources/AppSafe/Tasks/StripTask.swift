@@ -5,15 +5,18 @@ struct StripTask: AuditTask {
 	let briefDescription = "Ensure that symbols have been stripped from the binary"
 
 	func performAudit(package: Path) async throws {
+		// AppName.app/AppName
 		let binaryName = package.lastComponentWithoutExtension
 		let binaryPath = package + binaryName
 
+		// Get file path for stripped binary
 		let tmpDir = try TmpDir.tmpDir()
 		let strippedPath = tmpDir + "\(binaryName)-stripped"
 		if strippedPath.exists {
 			try strippedPath.delete()
 		}
 
+		// Strip the binary
 		try shellOut(to: "strip", arguments: [
 			"-rSTx", binaryPath.absolute().string,
 			"-o", strippedPath.absolute().string
