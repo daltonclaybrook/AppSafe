@@ -40,7 +40,7 @@ struct Audit: AsyncParsableCommand {
 			case error(String)
 		}
 
-		let name: String
+		let desription: String
 		let outcome: Outcome
 	}
 
@@ -51,14 +51,14 @@ struct Audit: AsyncParsableCommand {
 		let results = await withTaskGroup(of: TaskResult.self) { group in
 			for task in auditTasks {
 				group.addTask {
-					let name = task.taskName
+					let desription = task.briefDescription
 					do {
 						try await task.performAudit(package: package)
-						print("\(name): ✅")
-						return TaskResult(name: name, outcome: .success)
+						print("\(desription): ✅")
+						return TaskResult(desription: desription, outcome: .success)
 					} catch let error {
-						print("\(name): ❌")
-						return TaskResult(name: name, outcome: .error((error as CustomStringConvertible).description))
+						print("\(desription): ❌")
+						return TaskResult(desription: desription, outcome: .error((error as CustomStringConvertible).description))
 					}
 				}
 			}
