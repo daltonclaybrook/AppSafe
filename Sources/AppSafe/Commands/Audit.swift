@@ -47,7 +47,7 @@ struct Audit: AsyncParsableCommand {
 
 	private func runAuditTasksOnBuild(at path: Path) async throws {
 		let package = try Unarchive().unarchiveBuildIfNecessary(at: path)
-		print("📝  Performing audit tasks...\n")
+		print("📝  Performing audit tasks...")
 
 		let results = await withTaskGroup(of: TaskResult.self) { group in
 			for task in auditTasks {
@@ -79,7 +79,7 @@ struct Audit: AsyncParsableCommand {
 			print("✅  Audit complete!")
 		} else {
 			let allErrors = errorStrings.map { "  · \($0)" }.joined(separator: "\n")
-			print("\nErrors:\n\(allErrors)")
+			print("\nAudit failed with errors:\n\(allErrors)")
 			Darwin.exit(1)
 		}
 	}

@@ -7,7 +7,8 @@ struct GetTaskAllowTask: AuditTask {
 	let briefDescription = "Verify get-task-allow is false"
 
 	private static let regex = try! NSRegularExpression(
-		pattern: #"\[Key\] .*get-task-allow\n\h*\[Value\]\n\h+\[Bool\] (true|false)$"#
+		pattern: #"\[Key\] .*get-task-allow\n\h*\[Value\]\n\h+\[Bool\] (true|false)$"#,
+		options: .anchorsMatchLines
 	)
 
 	func performAudit(package: Path) async throws {
