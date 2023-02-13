@@ -17,7 +17,8 @@ struct Audit: AsyncParsableCommand {
 	private var auditTasks: [any AuditTask] {
 		return [
 			StaticFrameworksTask(),
-			GetTaskAllowTask()
+			GetTaskAllowTask(),
+			StripTask()
 		]
 	}
 
@@ -46,7 +47,7 @@ struct Audit: AsyncParsableCommand {
 
 	private func runAuditTasksOnBuild(at path: Path) async throws {
 		let package = try Unarchive().unarchiveBuildIfNecessary(at: path)
-		print("📝  Performing audit tasks...")
+		print("📝  Performing audit tasks...\n")
 
 		let results = await withTaskGroup(of: TaskResult.self) { group in
 			for task in auditTasks {
@@ -54,10 +55,10 @@ struct Audit: AsyncParsableCommand {
 					let desription = task.briefDescription
 					do {
 						try await task.performAudit(package: package)
-						print("\(desription): ✅")
+						print("✅  \(desription)")
 						return TaskResult(desription: desription, outcome: .success)
 					} catch let error {
-						print("\(desription): ❌")
+						print("❌  \(desription)")
 						return TaskResult(desription: desription, outcome: .error((error as CustomStringConvertible).description))
 					}
 				}
@@ -77,8 +78,8 @@ struct Audit: AsyncParsableCommand {
 		if errorStrings.isEmpty {
 			print("✅  Audit complete!")
 		} else {
-			let allErrors = errorStrings.map { "  - \($0)" }.joined(separator: "\n")
-			print("Errors:\n\(allErrors)")
+			let allErrors = errorStrings.map { "  · \($0)" }.joined(separator: "\n")
+			print("\nErrors:\n\(allErrors)")
 			Darwin.exit(1)
 		}
 	}
