@@ -17,8 +17,7 @@ struct Audit: AsyncParsableCommand {
 	private var auditTasks: [any AuditTask] {
 		return [
 			StaticFrameworksTask(),
-			GetTaskAllowTask(),
-			StripTask()
+			GetTaskAllowTask()
 		]
 	}
 
@@ -76,7 +75,7 @@ struct Audit: AsyncParsableCommand {
 		}
 
 		if errorStrings.isEmpty {
-			print("✅  Audit complete!")
+			print("Audit completed without errors!")
 		} else {
 			let allErrors = errorStrings.map { "  · \($0)" }.joined(separator: "\n")
 			print("\nAudit failed with errors:\n\(allErrors)")
