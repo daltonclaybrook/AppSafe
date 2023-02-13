@@ -7,7 +7,7 @@ struct GetTaskAllowTask: AuditTask {
 	let briefDescription = "Verify get-task-allow is false"
 
 	private static let regex = try! NSRegularExpression(
-		pattern: #"\[Key\] get-task-allow\n\h*\[Value\]\n\h+\[Bool\] (true|false)\n"#
+		pattern: #"\[Key\] .*get-task-allow\n\h*\[Value\]\n\h+\[Bool\] (true|false)$"#
 	)
 
 	func performAudit(package: Path) async throws {
@@ -26,7 +26,7 @@ struct GetTaskAllowTask: AuditTask {
 		// Parse the string using the Regex to find the `get-task-allow` entitlement
 		let contents: String = try entitlements.read()
 		guard let match = Self.regex.firstMatch(in: contents, range: NSRange(location: 0, length: contents.bridge().length)) else {
-			throw GetTaskAllowTaskError.cantFindGetTaskAllowEntitlement
+			throw GetTaskAllowTaskError.cantFindGetTaskAllowEntitlement(entitlements)
 		}
 
 		// Find the range of the entitlement value
@@ -50,7 +50,7 @@ struct GetTaskAllowTask: AuditTask {
 
 enum GetTaskAllowTaskError: Error {
 	case entitlementsFileNotCreated
-	case cantFindGetTaskAllowEntitlement
+	case cantFindGetTaskAllowEntitlement(Path)
 	case invalidEntitlement
 	case getTaskAllowIsTrue
 }
@@ -60,8 +60,8 @@ extension GetTaskAllowTaskError: CustomStringConvertible {
 		switch self {
 		case .entitlementsFileNotCreated:
 			return "The entitlements file could not be exported from the build"
-		case .cantFindGetTaskAllowEntitlement:
-			return "The exported entitlements file does not contain the `get-task-allow` key"
+		case .cantFindGetTaskAllowEntitlement(let path):
+			return "The exported entitlements file does not contain the `get-task-allow` key: \(path.absolute().string)"
 		case .invalidEntitlement:
 			return "The entitlements file could not be parsed"
 		case .getTaskAllowIsTrue:
