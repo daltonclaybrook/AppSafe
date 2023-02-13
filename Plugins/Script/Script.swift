@@ -44,9 +44,10 @@ LOG_FILE="$PACKAGE_DIR/.build.log"
 
 echo 'Building...'
 swift build --package-path "$PACKAGE_DIR" -c release > "$LOG_FILE" 2>&1
-if [[ $? != 0 ]]; then
+exit_code="$?"
+if [[ "$exit_code" != 0 ]]; then
 	cat "$LOG_FILE"
-	exit $?
+	exit "$exit_code"
 fi
 
 swift run --skip-build --package-path "$PACKAGE_DIR" -c release "$APP_NAME" "$@"
